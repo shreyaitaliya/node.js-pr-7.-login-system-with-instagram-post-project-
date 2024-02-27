@@ -1,4 +1,5 @@
 const createmodel = require('../models/createmodel');
+const registerModel = require('../models/registermodel');
 const fs = require('fs');
 
 const createUser = async (req, res) => {
@@ -11,6 +12,7 @@ const createUser = async (req, res) => {
         let userdata = await createmodel.create({
             description: req.body.description,
             image: imagename,
+            userId: res.locals.users.id
         })
         return res.redirect('/dashbord');
     } catch (error) {
@@ -21,7 +23,8 @@ const createUser = async (req, res) => {
 
 const dashbord = async (req, res) => {
     try {
-        let alldata = await createmodel.find({});
+        let alldata = await createmodel.find({}).populate('userId');
+        // console.log(alldata);
         return res.render('dashbord', {
             record: alldata
         })
@@ -94,10 +97,47 @@ const updateUser = async (req, res) => {
     }
 }
 
-const profile = (req, res) => {
-    return res.render('profile');
+const profile = async (req, res) => {
+    try {
+        let allprofile = await createmodel.find({ userId: res.locals.users.id }).populate('userId');
+        let userdetails = await registerModel.find({});
+        return res.render('profile', {
+            allprofile, userdetails
+        });
+    } catch (error) {
+        console.log(error);
+        return false;
+    }
+}
+
+const postLike = async (req, res) => {
+    try {
+        let userid = res.locals.users._id;
+        let posts = await createmodel.findByIdAndUpdate(req.params.id, {
+            $push: { likes: userid }
+        });
+        console.log("Post successfully liked");
+        return res.redirect('back');
+    } catch (err) {
+        console.log(err);
+        return false;
+    }
+}
+
+const postUnLike = async (req, res) => {
+    try {
+        let userid = res.locals.users._id;
+        let posts = await createmodel.findByIdAndUpdate(req.params.id, {
+            $pull: { likes: userid }
+        });
+        console.log("Post successfully unliked");
+        return res.redirect('back');
+    } catch (err) {
+        console.log(err);
+        return false;
+    }
 }
 
 module.exports = ({
-    createUser, dashbord, logout, delteRecord, editRecord, updateUser, profile
+    createUser, dashbord, logout, delteRecord, editRecord, updateUser, profile, postLike, postUnLike
 })

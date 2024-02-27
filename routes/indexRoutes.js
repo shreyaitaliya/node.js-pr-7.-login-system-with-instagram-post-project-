@@ -34,4 +34,9 @@ routes.get('/editRecord', CreateModel.editRecord);
 routes.get('/profile', CreateModel.profile);
 routes.post('/updateUser', imageupload, CreateModel.updateUser);
 
+//like
+routes.get('/postLike/:id', CreateModel.postLike)
+routes.get('/postUnLike/:id', CreateModel.postUnLike)
+
+
 module.exports = routes;
